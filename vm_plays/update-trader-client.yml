@@ -1,0 +1,45 @@
+- hosts: '{{ ip }}'
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+  tasks:
+
+  - name: Check if there is VM running
+    shell: vboxmanage list runningvms | cut -d"\"" -f2
+    register: runningvm
+  - debug: var=runningvm.stdout_lines
+    tags: check
+
+  - name: Shutting down the running VM
+    command: vboxmanage controlvm Windows7Lite acpipowerbutton
+    when: runningvm.stdout.find('Windows7Lite') != -1
+
+  - name: We'll pause for 2 min/s. to wait for all VMs to properly shut down.
+    pause:
+      minutes: 2
+    when: runningvm.stdout.find('Windows7Lite') != -1
+
+
+  - name: Set Windows7Lite VM 3D Acceleration to off
+    command: vboxmanage modifyvm Windows7Lite --accelerate3d off
+
+  - name: Start Windows7Lite VM in headless mode
+    command: vboxmanage startvm Windows7Lite --type=headless
+
+  - name: We'll pause for 2 min/s. to wait for all VM's to settle down
+    pause:
+      minutes: 2
+
+  - name: Upload TraderClient.msi to remote machine
+    copy: 
+      src: /tmp/TraderClient.msi
+      dest: /tmp/TraderClient.msi   
+
+  - name: Copy TraderClient.msi to Windows7Lite VM
+    shell: vboxmanage guestcontrol Windows7Lite --username Administrator --password Cxz@321 copyto --target-directory c:/ /tmp/TraderClient.msi
+
+  - name: Install TraderClient.msi
+    shell: vboxmanage guestcontrol Windows7Lite --username Administrator --password Cxz@321 run -- C:\\Windows\\System32\\msiexec.exe /i C:\\TraderClient.msi /quiet /passive /qn
+
+  - name: Shutting down the running VM
+    command: vboxmanage controlvm Windows7Lite acpipowerbutton

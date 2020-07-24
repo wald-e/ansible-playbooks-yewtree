@@ -1,0 +1,28 @@
+---
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Get running processes
+#    shell: ps aux | grep -F 'chromium' | grep -v -F 'grep' | awk '{ print $2 }'
+    shell: ps aux | grep -e 'chromium\|java\|skype' | grep -v -F 'grep' | awk '{ print $2 }'
+    register: running_processes
+
+  - name: Kill running processes
+    shell: "kill {{ item }}"
+    with_items: "{{ running_processes.stdout_lines }}"
+    ignore_errors: yes
+
+  - wait_for:
+      path: "/proc/{{ item }}/status"
+      state: absent
+    with_items: "{{ running_processes.stdout_lines }}"
+    ignore_errors: yes
+    register: killed_processes
+
+  - name: Force kill stuck processes
+    shell: "kill -9 {{ item }}"
+    with_items: "{{ killed_processes.results | select('failed') | map(attribute='item') | list }}"
+

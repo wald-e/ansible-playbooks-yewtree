@@ -1,0 +1,15 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  ignore_errors: yes
+
+  tasks:
+  - name: stat chromium dir
+    stat: path=/etc/opt/chromium-browser
+    register: chromium
+
+  - name: delete chromium dir
+    command: rm -rf /etc/opt/chromium-browser
+    when: chromium.stat.exists

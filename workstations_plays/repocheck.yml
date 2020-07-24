@@ -1,0 +1,15 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+#  ignore_errors: yes
+
+  tasks:
+
+  - name: Confirming if all workstations were configured to use L20 Repository
+    command: cat /etc/apt/sources.list.d/official-package-repositories.list
+    register: list
+
+  - debug: var=list.stdout_lines
+

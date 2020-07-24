@@ -1,0 +1,5 @@
+---
+- hosts: all
+  tasks:
+  - template: src=templates/ansiblesudo dest=/etc/sudoers.d/ansible owner=root group=root mode=0440
+    sudo: yes

@@ -1,0 +1,11 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Get mac addresses of all interfaces
+    debug:
+      msg: "{{ ansible_interfaces | difference(['lo']) | map('regex_replace', '^(.*)$', 'ansible_\\1' ) | map('extract', hosts, 'macaddress')  | list }}"
+

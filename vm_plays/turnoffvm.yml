@@ -1,0 +1,9 @@
+- hosts: '{{ ip }}'
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+  tasks:
+
+
+  - name: Shutting down the running VM
+    command: vboxmanage controlvm Windows7Lite acpipowerbutton

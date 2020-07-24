@@ -1,0 +1,11 @@
+- hosts: rbprodpc
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Checking VM Mem Size
+    shell: sudo vboxmanage showvminfo Windows7Lite | grep Mem
+    register: mem
+
+  - debug: var=mem.stdout_lines

@@ -1,0 +1,14 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  ignore_errors: yes
+
+  tasks:
+
+  - name: Confirming if the latest Browsers version have been installed
+#    shell: dpkg -l | grep -e 'google-chrome-stable\|chromium-browser' | awk '{print $3}'
+    command: google-chrome-stable --version
+    register: chrome
+  - debug: var=chrome.stdout_lines

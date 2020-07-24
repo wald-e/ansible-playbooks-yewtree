@@ -1,0 +1,11 @@
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  ignore_errors: yes
+  tasks:
+  - template: src=template/adminsudo dest=/etc/sudoers.d/administrator owner=root group=root mode=0440
+
+  - name: administrator file is present in sudoer.d dir
+    command: sudo cat /etc/sudoers.d/administrator
+    register: admin
+  - debug: var=admin.stdout_lines

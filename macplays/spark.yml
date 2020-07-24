@@ -1,0 +1,51 @@
+--- # Spark Client deployment script
+- hosts: localhost
+  remote_user: james.tandi
+#  become: yes
+#  become_method: sudo
+  connection: ssh
+  gather_facts: no
+  tasks:
+
+  - name: Assigning execute permission to spark startup.sh file
+    file: path=~/Desktop/PROD_4_5_0_3/{{ version }}_spark/resources/startup.sh mode=0775
+
+  - name: Creating a compressed archive of the Spark Client
+    archive:
+      path: ~/Desktop/PROD_4_5_0_3/{{ version }}_spark
+      dest: ~/Desktop/PROD_4_5_0_3/{{ version }}_spark.tar.gz
+
+  - name: Deploying the latest Spark Client {{ version }}
+    pause: prompt="Double Check your script!!..Hit Return to continue or Ctrl-C to abort"
+
+  - name: Kill Java Processes
+    action: shell pkill java || true
+
+  - name: Copying the Latest Spark Client {{ version }} from source to destination host/s
+#    shell: cd ~/Desktop/PROD_4_5_0_3 && tar -xvpzf {{ version }}_spark.tar.gz /opt/webchat/{{ version }}_spark
+    copy: src=~/Desktop/PROD_4_5_0_3/{{ version }}_spark.tar.gz dest=/tmp/
+
+  - name: Unpack the archived file
+    unarchive: src=/tmp/{{ version }}_spark.tar.gz dest=/opt/webchat/
+    become: yes
+
+  - name: Removing old Spark Client version
+    file: path=/opt/webchat/spark state=absent
+    become: yes
+    ignore_errors: yes
+
+  - name: Creating spark symlink
+    file: path=/opt/webchat/spark src=/opt/webchat/{{ version }}_spark state=link force=yes
+    become: yes
+
+  - name: Deployment Successful
+    stat: path=/opt/webchat/spark
+    register: sym
+
+  - debug:
+      msg: "islnk isn't defined (path doesn't exist)"
+    when: sym.stat.islnk is not defined
+
+  - debug:
+      msg: "Spark is updated to {{ version }}"
+    when: sym.stat.islnk is defined and sym.stat.islnk

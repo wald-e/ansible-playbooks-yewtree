@@ -1,0 +1,12 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+#  ignore_errors: yes
+
+  tasks:
+  - name: Confirming if the four packages were successfully installed
+    shell: dpkg -l | grep 4.4.0-112 | cut -d " " -f3
+    register: installed
+  - debug: "msg='The ff packages have been installed: {{ installed.stdout }}'"

@@ -1,0 +1,35 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+#  ignore_errors: yes
+
+  tasks:
+
+
+  - name: Removing 116 apt module
+    apt: name={{item}} state=absent
+#     state: latest       
+    with_items:
+      - linux-headers-4.4.0-116
+      - linux-headers-4.4.0-116-generic
+      - linux-image-4.4.0-116-generic
+      - linux-image-extra-4.4.0-116-generic
+
+  - name: Install packages using apt module 
+    apt: name={{item}} state=installed
+#     state: latest       
+    with_items: 
+      - linux-headers-4.4.0-112 
+      - linux-headers-4.4.0-112-generic 
+      - linux-image-4.4.0-112-generic 
+      - linux-image-extra-4.4.0-112-generic
+
+  - name: Confirming if the four packages were successfully installed
+    shell: dpkg -l | grep 4.4.0-112 | cut -d " " -f3
+    register: installed
+  - debug: "msg='The ff packages have been installed: {{ installed.stdout }}'"
+
+  - name: Reboot
+    command: shutdown -r now 

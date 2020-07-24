@@ -1,0 +1,18 @@
+---
+- hosts: uat
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Replacing dns-nameserver 192.168.195.5 with dns-nameserver 192.168.195.152
+    replace: dest=/etc/network/interfaces regexp='^dns-nameserver 192.168.195.5$' replace='dns-nameserver 192.168.195.152'
+
+  - name: Replacing dns-nameserver 192.168.195.6 with dns-nameserver 192.168.195.153
+    replace: dest=/etc/network/interfaces regexp='^dns-nameserver 192.168.195.6$' replace='dns-nameserver 192.168.195.153'
+
+
+  - name: Confirming the new interface config
+    shell: grep dns* /etc/network/interfaces
+    register: new_dns
+  - debug: var=new_dns.stdout_lines

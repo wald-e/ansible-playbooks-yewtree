@@ -1,0 +1,28 @@
+--- # PROD Bookmaking App PREP ansible script
+- hosts: localhost
+  remote_user: james.tandi
+  connection: ssh
+  gather_facts: no
+  tasks:
+
+  - name: Bookmaking App {{ version }} prep
+    pause: prompt="Double Check your script!!..Hit Return to continue or Ctrl-C to abort"
+
+  - name: Assigning execute permission to StartDashboardClient.sh
+    file: path=~/Desktop/PROD_4_5_0_3/{{ version }}/StartDashboardClient.sh mode=0775
+
+  - name: Removing .sh extension of the StartDashboardClient.sh file
+    command: mv ~/Desktop/PROD_4_5_0_3/{{ version }}/StartDashboardClient.sh ~/Desktop/PROD_4_5_0_3/{{ version }}/StartDashboardClient
+
+  - name: Creating a compressed archive of the Bookmaking App
+    archive:
+      path: ~/Desktop/PROD_4_5_0_3/{{ version }}
+      dest: ~/Desktop/PROD_4_5_0_3/{{ version }}.tar.gz
+
+  - name: Bookmaking App {{ version }} Deployment Prep
+    unarchive: src=~/Desktop/PROD_4_5_0_3/{{ version }}.tar.gz dest=/tmp
+    tags: unarchive
+
+  - name: set directory/file attributes
+    file: path=/tmp/{{ version }} owner=root group=root state=directory recurse=yes
+    tags: attributes

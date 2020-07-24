@@ -1,0 +1,21 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Only run "update_cache=yes" if the last one is more than 86400 (1day) seconds ago
+    apt:
+      update_cache: yes
+      cache_valid_time: 86400
+ 
+  - name: Install the latest skypeforlinux
+    apt:
+      name: skypeforlinux 
+      state: latest
+
+  - name: Confirming if the latest skypeforlinux version has been installed
+    shell: dpkg -l | grep skypeforlinux | awk '{print $3}'
+    register: skype
+  - debug: var=skype.stdout_lines

@@ -1,0 +1,16 @@
+---
+#- hosts: uatwebdav
+#  remote_user: adminuser
+#  tasks:
+#  - name: Synchronize files from UAT MACH05 WebDAV reposirtory to local
+#    synchronize:
+#      mode: pull
+#      src: /var/www/webdav/
+#      dest: ~/Documents/BookmakingApp_Releases/MACH05/UAT
+#      rsync_opts:
+#        - "--exclude=.*"
+#        - "--exclude=passwd*"
+#        - "--exclude=sample*"
+#        - "--exclude=uat"
+#      archive: yes
+#      compress: yes

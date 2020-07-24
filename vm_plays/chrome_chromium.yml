@@ -1,0 +1,48 @@
+---
+- hosts: exec
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Create directories if doesn't exist
+    file: 
+      path: /etc/opt/chrome/policies/managed
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+      recurse: yes
+
+#  - name: list the files in the folder
+#    command: ls /tmp/chrome_policies/
+#    register: dir_out
+
+  - name: Copy JSON policy files from src to dst
+    copy: src=/tmp/chrome_policies/ dest=/etc/opt/chrome/policies/managed/ owner=root group=root mode=0644
+
+
+  - name: Checking JSON files
+    shell: ls -la /etc/opt/chrome/policies/managed
+    register: jsonfiles
+  - debug: var=jsonfiles.stdout_lines
+#    src: /tmp/chrome_policies/{{ items }}
+#    with_items:
+#     owner: root
+#     group: root
+#     mode: 0644
+
+#  - name: Check if policies where successfully added
+#    shell: ls /etc/opt/chrome/policies/managed
+#    register: policy
+#  - debug: var=policy.stdout_lines
+
+#  - name: Adding Chromium proxy setting
+#    lineinfile: dest=/usr/share/applications/chromium-browser.desktop
+#    line: "--proxy-server='http://52.196.102.91:8080' --disable-extensions --disable-gpu"
+#    insertafter: "^#?Exec=chromium-browser %U"
+
+#  - name: Check if Chromium proxy has been added
+#    shell: cat /usr/share/applications/chromium-browser.desktop | grep proxy
+#    register: proxy
+#  - debug: var=proxy.stdout_lines

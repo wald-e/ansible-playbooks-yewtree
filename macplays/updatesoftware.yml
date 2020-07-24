@@ -1,0 +1,29 @@
+---
+- hosts: csmac
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+#  - name: Get running processes
+#    shell: ps aux | grep Safari | grep -v -F 'grep' | awk '{ print $2 }'
+#    register: running_processes
+
+#  - name: Kill running processes
+#    shell: "kill {{ item }}"
+#    with_items: "{{ running_processes.stdout_lines }}"
+#    ignore_errors: yes
+
+  - name: Checking the current version of Safari
+    command: mdls -name kMDItemVersion /Applications/Safari.app
+    register: safari
+  - debug: var=safari.stdout_lines
+
+
+#  - name: Install the latest version of Safari
+#    command: softwareupdate -i Safari11.0Sierra-11.0
+
+  - name: Check if the latest version has been installed successfully
+    command: mdls -name kMDItemVersion /Applications/Safari.app
+    register: safarinew
+  - debug: var=safarinew.stdout_lines

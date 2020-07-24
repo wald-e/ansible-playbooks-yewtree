@@ -1,0 +1,4 @@
+---
+- hosts: workstations
+  tasks:
+  - fetch: src=/opt/bookmaking/dashboard/logs/bookmaking-app-root.log dest=/home/administrator/BookAppLogs/log-{{ inventory_hostname }} flat=yes

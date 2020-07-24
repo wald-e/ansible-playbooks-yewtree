@@ -1,0 +1,32 @@
+- hosts: single
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Chrome version check
+    shell: google-chrome-stable --version
+    register: chrome
+  - debug: var=chrome.stdout_lines
+
+  - name: Chromium version check
+    shell: chromium-browser --version
+    register: chromium
+  - debug: var=chromium.stdout_lines
+
+  - name: Chrome desktop file check
+    shell: cat /usr/share/applications/google-chrome.desktop | grep Exec
+    register: chromedesktop
+  - debug: var=chromedesktop.stdout_lines
+
+
+  - name: Chromium desktop file check
+    shell: cat /usr/share/applications/chromium-browser.desktop | grep Exec
+    register: chromiumdesktop
+  - debug: var=chromiumdesktop.stdout_lines
+
+  - name: Checking JSON files
+    shell: ls -la /etc/opt/chrome/policies/managed
+    register: jsonfiles
+  - debug: var=jsonfiles.stdout_lines
+

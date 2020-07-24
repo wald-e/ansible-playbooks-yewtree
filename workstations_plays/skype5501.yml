@@ -1,0 +1,13 @@
+---
+- hosts: skype
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Copy the skypeforlinux .deb package from source to destination host/s
+    copy: src=/tmp/skypeforlinux-64.deb dest=/tmp/
+
+  - name: Install the latest skypeforlinux .deb package
+    apt: 
+      deb: /tmp/skypeforlinux-64.deb

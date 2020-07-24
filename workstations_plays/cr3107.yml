@@ -1,0 +1,53 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+#  ignore_errors: yes
+
+  tasks:
+  - name: Copy the .deb packages from source to destination host/s
+    copy: src=~/Desktop/cr3107/{{ item }} dest=/tmp/
+    with_items:
+      - chromium-browser_65.0.3325.181-0ubuntu0.14.04.1_amd64.deb
+      - chromium-codecs-ffmpeg-extra_65.0.3325.181-0ubuntu0.14.04.1_amd64.deb
+      - chromium-browser-l10n_65.0.3325.181-0ubuntu0.14.04.1_all.deb
+      - flashplugin-installer_29.0.0.171ubuntu0.14.04.1_amd64.deb
+      - google-chrome-stable_66.0.3359.181-1_amd64.deb
+      - skypeforlinux_8.20.0.9_amd64.deb
+
+
+  - name: Installing flashplugin-installer Version 29.0.0.171ubuntu0.14.04.1
+    apt:
+      deb: /tmp/flashplugin-installer_29.0.0.171ubuntu0.14.04.1_amd64.deb
+
+
+  - name: Installing skypeforlinux Version 8.20.0.9
+    apt:
+      deb: /tmp/skypeforlinux_8.20.0.9_amd64.deb
+
+
+  - name: Installing google-chrome-stable Version 66.0.3359.181-1
+    apt:
+      deb: /tmp/google-chrome-stable_66.0.3359.181-1_amd64.deb
+
+
+  - name: Installing chromium-codecs-ffmpeg-extra_65.0.3325.181-0ubuntu0.14.04.1
+    apt:
+      deb: /tmp/chromium-codecs-ffmpeg-extra_65.0.3325.181-0ubuntu0.14.04.1_amd64.deb
+
+#  - name: Installing chromium-browser-l10n_65.0.3325.181-0ubuntu0.14.04.1_all
+#    apt:
+#      deb: /tmp/chromium-browser-l10n_65.0.3325.181-0ubuntu0.14.04.1_all.deb
+
+#  - name: Installing chromium-browser Version 65.0.3325.181-0ubuntu0.14.04.1
+#    apt:
+#      deb: /tmp/chromium-browser_65.0.3325.181-0ubuntu0.14.04.1_amd64.deb
+
+  - name: Installing chromium-browser Version 65.0.3325.181-0ubuntu0.14.04.1
+    shell: cd /tmp && dpkg -i chromium-browser_65.0.3325.181-0ubuntu0.14.04.1_amd64.deb
+ 
+  - name: Confirming if the packages have been installed successfully
+    shell: dpkg -l | grep -e google-chrome-stable -e chromium-browser -e skypeforlinux -e flashplugin-installer | awk '{print $2" "$3}'
+    register: packages
+  - debug: var=packages.stdout_lines

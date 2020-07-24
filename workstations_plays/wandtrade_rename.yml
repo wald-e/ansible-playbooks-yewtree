@@ -1,0 +1,24 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+#  ignore_errors: yes
+
+  tasks:
+  - name: stat Watch_and_Trade.desktop
+    stat: path=/usr/share/applications/Watch_and_Trade.desktop
+    register: wnt
+
+  - name: Rename Watch_and_Trade.desktop to Watch_and_Trade.desktop.disable
+    command: mv /usr/share/applications/Watch_and_Trade.desktop /usr/share/applications/Watch_and_Trade.desktop.disable
+    when: wnt.stat.exists
+
+  - name: stat virtualbox.desktop 
+    stat: path=/usr/share/applications/virtualbox.desktop
+    register: virt
+
+  - name: Rename virtualbox.desktop to virtualbox.desktop.disable
+    command: mv /usr/share/applications/virtualbox.desktop /usr/share/applications/virtualbox.desktop.disable
+    when: virt.stat.exists
+

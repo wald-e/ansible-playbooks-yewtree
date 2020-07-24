@@ -1,0 +1,52 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  ignore_errors: true
+
+  tasks:
+  - name: List registered vms if any
+    command: VBoxManage list vms
+    register: vm_list
+  - debug: var=vm_list.stdout
+
+  - name: Check if there is VM running
+    shell: vboxmanage list runningvms | cut -d"\"" -f2
+    register: runningvm
+  - debug: var=runningvm.stdout_lines
+    tags: check
+
+  - name: Shutting down the running VM
+    shell: vboxmanage controlvm Windows7Lite acpipowerbutton
+    when: runningvm.stdout.find('Windows7Lite') != -1
+
+  - name: Check if Windows7Lite directory exists in /opt
+    stat: path=/opt/Windows7Lite
+    register: p
+
+  - name: Unregister Windows7Lite vm only if exists 
+    command: VBoxManage unregistervm Windows7Lite
+    when: p.stat.exists
+
+  - name: Delete directory only if exists
+    file: path=/opt/Windows7Lite state=absent
+    when: p.stat.exists
+
+  - name: Copy files from local src to remote dst
+    unarchive: src=~/Documents/Windows7Lite.tar.gz dest=/opt owner=administrator group=administrator
+
+  - name:
+    shell: ls -l /opt/Windows7Lite
+    changed_when: False
+    check_mode: no
+    register: result
+  - debug: var=result.stdout_lines
+
+  - name: Register new Windows7Lite vm
+    command: VBoxManage registervm /opt/Windows7Lite/Windows7Lite.vbox
+
+  - name: List newly registered vm
+    command: VBoxManage list vms
+    register: vm_list_new
+  - debug: var=vm_list_new.stdout_lines

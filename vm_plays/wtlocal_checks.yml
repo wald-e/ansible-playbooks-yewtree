@@ -1,0 +1,36 @@
+- hosts: deadball1
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Checking if there is registered VM
+    command: vboxmanage list vms
+    register: registered
+  - debug: var=registered.stdout_lines
+
+  - name: Checking current VM Settings
+    shell: vboxmanage showvminfo Windows7Lite | grep -e 'PAE\|Nested\|Memo'
+    register: attributes
+  - debug: var=attributes.stdout_lines
+
+  - name: Checking for WT desktop file
+    shell: ls /usr/share/applications/ | grep Watch
+    register: watch
+  - debug: var=watch.stdout_lines
+
+
+  - name: Modify VM Settings
+    command: vboxmanage modifyvm Windows7Lite --memory 2048 --nestedpaging off --pae off
+
+  - name: Checking new VM Settings
+    shell: vboxmanage showvminfo Windows7Lite | grep -e 'PAE\|Nested\|Memo'
+    register: new_attributes
+  - debug: var=new_attributes.stdout_lines   
+
+
+
+#  - name: Checking current VM Settings
+#    shell: sudo vboxmanage showvminfo Windows7Lite | grep -e 'PAE\|Nested\|Memo'
+#    register: newattributes
+#  - debug: var=newattributes.stdout_lines

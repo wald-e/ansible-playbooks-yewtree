@@ -1,0 +1,40 @@
+  - hosts: '{{ ip }}'
+    become_method: sudo
+    become: yes
+    connection: ssh
+    gather_facts: no
+    vars:
+      version: "{{ lookup('file', '/mnt/dav/uat_version.txt') }}"
+
+    tasks:
+
+    - name: Deploying the latest UAT Bookmaking App {{ version }}
+      pause: prompt="Double Check your script!!..Hit Return to continue or Ctrl-C to abort"
+
+    - name: Kill Java Processes
+      action: shell pkill java || true
+
+    - name: Copying the Latest Bookmaking App {{ version }} from source to destination host/s
+      unarchive: src=/tmp/dashboard-client-{{ version }}.tar.gz dest=/opt/bookmaking-uat
+
+    - name: Updating file ownership
+      file: path=/opt/bookmaking-uat/dashboard-client-{{ version }} owner=root group=root state=directory recurse=yes
+
+    - name: Removing old Bookmaking App version
+      file: path=/opt/bookmaking-uat/dashboard state=absent
+
+    - name: Creating dashboard symlink
+      file: path=/opt/bookmaking-uat/dashboard src=/opt/bookmaking-uat/dashboard-client-{{ version }} state=link force=yes
+
+    - name: Deployment Successful
+      stat: path=/opt/bookmaking-uat/dashboard
+      register: sym
+
+    - debug:
+        msg: "islnk isn't defined (path doesn't exist)"
+      when: sym.stat.islnk is not defined
+
+    - debug:
+        msg: "BookApp is updated to {{ version }}"
+      when: sym.stat.islnk is defined and sym.stat.islnk
+

@@ -1,0 +1,30 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Install the latest Chromium Browser version
+    apt:
+      name: chromium-browser
+      state: latest
+    register: chromiumlatest
+
+  - name: chromium updated - configuring proxy settings
+    replace: dest=/usr/share/applications/chromium-browser.desktop regexp='^Exec=chromium-browser %U$' replace='Exec=chromium-browser %U --proxy-server="http://52.196.102.91:8080" --disable-extensions --disable-gpu'
+    when: chromiumlatest|changed
+
+  - name: chromium updated - configuring proxy settings
+    replace: dest=/usr/share/applications/chromium-browser.desktop regexp='^Exec=chromium-browser$' replace='Exec=chromium-browser --proxy-server="http://52.196.102.91:8080" --disable-extensions --disable-gpu'
+    when: chromiumlatest|changed
+  
+  - name: Confirming if the latest Browsers version have been installed
+    shell: dpkg -l | grep -e 'google-chrome-stable\|chromium-browser' | awk '{print $3}'
+    register: browsers
+  - debug: var=browsers.stdout_lines
+  
+  - name: Confirming if the Chromium proxy settings are correct
+    shell: cat /usr/share/applications/chromium-browser.desktop | grep proxy
+    register: proxy
+  - debug: var=proxy.stdout_lines

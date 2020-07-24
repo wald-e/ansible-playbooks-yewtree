@@ -1,0 +1,60 @@
+  - hosts: localhost
+    remote_user: james.tandi
+    become_method: sudo
+    become: yes
+    connection: ssh
+    gather_facts: no
+    vars:
+      version: "{{ lookup('file', '/mnt/dav/uat_version.txt') }}"
+
+    tasks:
+    - debug: 
+        msg: "The current build of UAT MACH05 bookmaking app is {{ version }}"
+    
+    - name: Prep new build by copying to /tmp
+      copy: 
+        src: /mnt/dav/{{ version }} 
+        dest: /tmp
+
+    - name: Unzip latest build of MACH05 UAT Bookmaking App
+      unarchive:
+        src: /tmp/{{ version }}/dashboard-client.zip 
+        dest: /tmp/{{ version }}
+
+    - name: Create logs directory if does not exist
+      file:
+        path: /tmp/{{ version }}/dashboard-client/logs
+        state: directory
+        mode: 0777
+
+    - name: Change lib direcrory permission 
+      file:
+        path: /tmp/{{ version }}/dashboard-client/lib
+        mode: 0777
+
+    - name: Add executable bit to StartDashboardClient.sh file
+      file:
+        path: /tmp/{{ version }}/dashboard-client/StartDashboardClient.sh
+        mode: "ugo+x"
+
+    - name: Remove gksu and add name and host tracking in the startup script using lineinfile module
+      lineinfile:
+        path: /tmp/{{ version }}/dashboard-client/StartDashboardClient.sh
+        regexp: '^gksu'
+        line: 'java -Xms400m -Xmx1024m -Dsun.java2d.xrender=false -Djava.net.preferIPv4Stack=true -Duser.timezone=GMT-4 -Duser.name=$HOSTNAME-$USER -jar dashboard-ui-5.0.jar pause'
+
+    - name: Copy StartDashboardClient.sh file
+      command: cp /tmp/{{ version }}/dashboard-client/StartDashboardClient.sh /tmp/{{ version }}/dashboard-client/StartDashboardClient
+
+    - name: Rename dashboard-client directory before compressing
+      command: mv /tmp/{{ version }}/dashboard-client /tmp/{{ version }}/dashboard-client-{{ version }} 
+
+    - name: Compress latest build of UAT MACH 05 bookmaking app 
+      archive:
+        path: /tmp/{{ version }}/dashboard-client-{{ version }}
+        dest: /tmp/dashboard-client-{{ version }}.tar.gz
+   
+      register: latest_build
+
+    - debug:
+        msg: "{{ latest_build.dest }}"

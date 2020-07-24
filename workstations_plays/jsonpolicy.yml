@@ -1,0 +1,54 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  ignore_errors: yes
+
+  tasks:
+  - name: Creating directories for Chrome browser policies
+    file:
+      path: /etc/opt/chrome/policies/managed
+      state: directory
+      mode: 0755
+
+  - name: Creating directories for Chromium browser policies
+    file:
+      path: /etc/chromium-browser/policies/managed
+      state: directory
+      mode: 0755
+
+  - name: Cleaning Chrome policy Dir
+    shell: cd /etc/opt/chrome/policies/managed/ && rm *
+
+  - name: Cleaning Chromium policy Dir
+    shell: cd /etc/chromium-browser/policies/managed/ && rm *
+ 
+  - name: Copying Chrome policy json file from src to dest
+    copy:
+      src: /tmp/ChromePolicyList.json 
+      dest: /etc/opt/chrome/policies/managed/ChromePolicyList.json
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Copying Chromium policy json file from src to dest
+    copy:
+      src: /tmp/ChromiumPolicyList.json
+      dest: /etc/chromium-browser/policies/managed/ChromiumPolicyList.json
+      owner: root
+      group: root
+      mode: 0644
+
+
+  - name: Confirming if the chrome policy list has been added
+    command: ls /etc/opt/chrome/policies/managed/
+    register: chrome
+  - debug: var=chrome.stdout_lines
+
+
+  - name: Confirming if the chromium policy list has been added
+    command: ls /etc/chromium-browser/policies/managed/
+    register: chromium
+  - debug: var=chromium.stdout_lines
+

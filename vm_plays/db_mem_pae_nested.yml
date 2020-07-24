@@ -1,0 +1,28 @@
+---
+- hosts: deadball3
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Checking current VM Mem Size, PAE and Nested Paging settings
+    shell: vboxmanage showvminfo Windows7Lite | grep -e 'PAE\|Nested\|Memo'
+    register: mepnest
+
+  - debug: var=mepnest.stdout_lines
+
+ 
+#  - name: Modify Windows7Lite RAM to 2GB
+#    command: VBoxManage modifyvm Windows7Lite --memory 2048
+
+#  - name: Modify Windows7Lite Nested Paging, set to OFF
+#    command: VBoxManage modifyvm Windows7Lite --nestedpaging off --pae off
+
+#  - name: Modify Windows7Lite PAE, set to off
+#    command: VBoxManage modifyvm Windows7Lite --pae off
+
+#  - name: Checking updated VM Mem Size, PAE and Nested Paging settings
+#    shell: vboxmanage showvminfo Windows7Lite | grep -e 'PAE\|Nested\|Memo'
+#    register: mepnest2
+
+#  - debug: var=mepnest2.stdout_lines

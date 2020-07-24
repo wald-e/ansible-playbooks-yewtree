@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  remote_user: administrator
+  become: yes
+  become_method: sudo
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: Unarchive
+    unarchive: src=/tmp/test.tar.gz dest=/home/administrator/ansible/playbooks/unarchive copy=yes
+  

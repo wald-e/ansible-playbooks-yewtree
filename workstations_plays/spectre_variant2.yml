@@ -1,0 +1,35 @@
+---
+- hosts: '{{ ip }}'
+  become: yes
+  become_method: sudo
+  gather_facts: no
+#  ignore_errors: yes
+
+  tasks:
+
+
+  - name: Updating gcc to the defined version
+    command: apt-get install -y gcc-4.8
+
+  - name: Check if gcc-4.8 has been installed successfully
+    shell: dpkg -l | grep gcc-4.8
+    register: gcc_check
+
+
+  - name: Spectre Variant 2 Kernel Patch
+    apt: name={{item}} state=installed
+    with_items: 
+      - linux-headers-4.4.0-116 
+      - linux-headers-4.4.0-116-generic 
+      - linux-image-4.4.0-116-generic 
+      - linux-image-extra-4.4.0-116-generic
+    when: gcc_check.rc == 0
+
+  - name: Confirming if the four packages were successfully installed
+    shell: dpkg -l | grep 4.4.0-116 | cut -d " " -f3
+    register: installed
+  - debug: "msg='The ff packages have been installed: {{ installed.stdout }}'" 
+
+  - name:  Rebooting the system for the updates to take effect
+    command: shutdown -r now
+    when: installed.rc == 0

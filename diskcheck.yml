@@ -1,0 +1,9 @@
+--- # CHECK DISK SPACE
+- hosts: feed_servers
+  gather_facts: yes
+  tasks:
+  - name: Gather the free disk space for each server
+    shell: df -h
+    register: result
+  - name: Display the JSON formatted results
+    debug: var=result

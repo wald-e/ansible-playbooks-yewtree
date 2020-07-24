@@ -1,0 +1,13 @@
+---
+- hosts: all_prodpc
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  ignore_errors: yes
+
+  tasks:
+  - name: test
+    shell: ls ~ | grep virt*
+    register: virt
+  - debug: var=virt.stdout_lines
+

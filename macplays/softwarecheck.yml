@@ -1,0 +1,12 @@
+---
+- hosts: csmac
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+
+  - name: Checking the current version of {{ software }}
+    shell: mdls -name kMDItemVersion /Applications/{{ software }}.app | awk -F \" '/kMDItemVersion/ { print "'"{{ software }}"'", $2 }'
+    register: app
+  - debug: var=app.stdout
+

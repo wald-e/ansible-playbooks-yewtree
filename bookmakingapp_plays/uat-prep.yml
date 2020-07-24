@@ -1,0 +1,39 @@
+--- # UAT Bookmaking App PREP ansible script
+- hosts: repo
+  remote_user: ck
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: UAT Bookmaking App {{ version }} prep 
+    pause: prompt="Double Check your script!!..Hit Return to continue or Ctrl-C to abort"
+
+  - name: Creating a compressed archive of the Bookmaking App
+    shell: cd /home/ck/MACH45/UAT && tar -cvpzf UAT_{{ version }}.tar.gz UAT_{{ version }}/
+
+  - name: Fetching file {{ version }}.tar.gz from repo
+    fetch: src=~/MACH45/UAT/UAT_{{ version }}.tar.gz dest=/tmp flat=yes
+    ignore_errors: yes
+    tags: fetch
+
+
+- hosts: localhost
+  remote_user: james.tandi
+  become_method: sudo
+  connection: ssh
+  gather_facts: no
+  tasks:
+  - name: UAT Bookmaking App {{ version }} Deployment Prep
+    unarchive: src=/tmp/UAT_{{ version }}.tar.gz dest=~/Documents/BookAppRelease/UAT
+
+  - name: Assigning execute permission to StartDashboardClient.sh
+    file: path=~/Documents/BookAppRelease/UAT/UAT_{{ version }}/StartDashboardClient.sh mode=0775
+
+
+  - name: StartDashboardClient.sh to StartDashboardClient
+    command: mv ~/Documents/BookAppRelease/UAT/UAT_{{ version }}/StartDashboardClient.sh ~/Documents/BookAppRelease/UAT/UAT_{{ version }}/StartDashboardClient
+
+  - name: Editing StartDashboardClient file
+    replace: dest=~/Documents/BookAppRelease/UAT/UAT_{{ version }}/StartDashboardClient regexp='^prg_path="/opt/bookmaking/dashboard"$' replace='prg_path="/opt/bookmaking-uat/dashboard"'
+
+  - name: Compressing UAT Bookmaking App {{ version }} to be ready for deployment
+    shell: cd ~/Documents/BookAppRelease/UAT && tar -cvpzf UAT_{{ version }}.tar.gz UAT_{{ version }}/

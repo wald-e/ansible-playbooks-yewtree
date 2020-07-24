@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+  - name: Check if there is VM running
+    shell: vboxmanage list runningvms | cut -d"\"" -f2
+    register: runningvm
+  
+  - name: Shutting down running VM
+    shell: vboxmanage controlvm Windows7Lite acpipowerbutton
+    when: runningvm.stdout.find('Windows7Lite') != -1
+

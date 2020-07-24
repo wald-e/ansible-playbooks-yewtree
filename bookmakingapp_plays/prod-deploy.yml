@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  tasks:
+
+  - name: Deploying the latest UAT Bookmaking App {{ version }}
+    pause: prompt="Double Check your script!!..Hit Return to continue or Ctrl-C to abort"
+
+  - name: Kill Java Processes
+    action: shell pkill java || true
+
+  - name: Copying the Latest Bookmaking App {{ version }} from source to destination host/s
+    unarchive: src=~/Documents/BookAppRelease/PROD/{{ version }}.tar.gz dest=/opt/bookmaking
+
+  - name: Updating file ownership
+    file: path=/opt/bookmaking/{{ version }} owner=root group=root state=directory recurse=yes
+
+  - name: Removing old Bookmaking App version
+    file: path=/opt/bookmaking/dashboard state=absent
+
+  - name: Creating dashboard symlink
+    file: path=/opt/bookmaking/dashboard src=/opt/bookmaking/{{ version }} state=link force=yes
+
+#  - name: Done Deploying
+#    command: ls -la /opt/bookmaking-uat/dashboard
+#    register: uatversion
+
+#  - debug: var=uatversion
+
+  - name: Deployment Successful
+    stat: path=/opt/bookmaking/dashboard
+    register: sym
+
+  - debug:
+      msg: "islnk isn't defined (path doesn't exist)"
+    when: sym.stat.islnk is not defined
+
+  - debug:
+      msg: "BookApp is updated to {{ version }}"
+    when: sym.stat.islnk is defined and sym.stat.islnk
